@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css"
+      rel="stylesheet"
+    />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui"
+    />
+    <title>Contatos</title>
+    <style type="text/css">
+      * {
+        box-sizing: border-box;
+      }
+      body,
+      h1,
+      h2,
+      ul,
+      li {
+        margin: 0;
+        padding: 0;
+      }
+      ul {
+        list-style: none;
+      }
+      body {
+        background-color: #cde9ce;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      #app {
+        padding: 0 80px;
+      }
+
+      .contato {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: auto;
+      }
+      .contato .title {
+        margin-top: 5%;
+        margin-bottom: 0;
+        font-weight: 200;
+      }
+      .contato .contato_nome {
+        grid-column: 1;
+      }
+      .contato .contato_numero {
+        grid-column: 2;
+      }
+      .contato .btn {
+        grid-column: 3;
+      }
+      .contato::after {
+        content: "";
+        width: 250%;
+        display: block;
+        border-bottom: 1px solid #ccc;
+        padding-top: 0;
+      }
+      .btn {
+        border-radius: 2%;
+        background-color: #b798d2;
+        border: none;
+        color: white;
+        text-align: center;
+        font-size: 18px;
+        padding: 2%;
+        width: 35%;
+        cursor: pointer;
+        margin: 1%;
+        margin-bottom: 15%;
+      }
+      .btn:hover {
+        background-color: #d0bbe1;
+        color: #000;
+      }
+      .btn_editar {
+        margin-bottom: 0;
+      }
+      .btn_incluir {
+        border-radius: 2%;
+        background-color: #b798d2;
+        border: none;
+        color: white;
+        text-align: center;
+        font-size: 18px;
+        padding: 2%;
+        width: 35%;
+        cursor: pointer;
+        margin: 1%;
+        margin-left: 50%;
+        margin-bottom: 15%;
+      }
+      .btn_incluir:hover {
+        background-color: #d0bbe1;
+        color: #000;
+      }
+      .v-app {
+        height: 0;
+        width: 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="app">
+      <v-app id="inspire">
+        <v-data-table
+          :headers="headers"
+          :items="nomes"
+          phone="telefone"
+          class="elevation-1"
+        >
+          <template v-slot:top>
+            <v-toolbar flat>
+              <v-toolbar-title>Contatos</v-toolbar-title>
+              <v-divider class="mx-4" inset vertical></v-divider>
+              <v-spacer></v-spacer>
+              <v-dialog v-model="dialog" max-width="500px">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    fab
+                    dark
+                    big
+                    color="pink lighten-1"
+                    class="mb-2"
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    <v-icon dark> mdi-plus </v-icon>
+                  </v-btn>
+                </template>
+
+                <!------Modal incluir e editar  ------>
+                <v-card>
+                  <v-card-title>
+                    <span class="text-h5">{{ formTitle }}</span>
+                  </v-card-title>
+                  <v-card-text>
+                    <v-container>
+                      <v-row>
+                        <v-col cols="12" sm="6" md="4">
+                          <v-text-field
+                            v-model="editedItem.name"
+                            label="Nome"
+                          ></v-text-field>
+                        </v-col>
+                        <v-col cols="12" sm="6" md="4">
+                          <v-text-field
+                            v-model="editedItem.telefone"
+                            label="telefone"
+                          ></v-text-field>
+                        </v-col>
+                      </v-row>
+                    </v-container>
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="pink lighten-1" text @click="close">
+                      Cancelar
+                    </v-btn>
+                    <v-btn color="pink lighten-1" text @click="save">
+                      Salvar
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+
+              <!---- Modal mensagem de cancelamento  ----->
+              <v-dialog v-model="dialogDelete" max-width="500px">
+                <v-card>
+                  <v-card-title class="text-h5"
+                    >Deseja realmente excluir este contato?</v-card-title
+                  >
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="pink lighten-1" text @click="closeDelete"
+                      >Não</v-btn
+                    >
+                    <v-btn
+                      color="pink lighten-1"
+                      text
+                      @click="deleteItemConfirm"
+                      >Sim</v-btn
+                    >
+                    <v-spacer></v-spacer>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+            </v-toolbar>
+          </template>
+
+          <---Botões de Ação--->
+          <template v-slot:item.actions="{ item }">
+            <v-icon small class="mr-2" @click="editItem(item)">
+              mdi-pencil
+            </v-icon>
+            <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
+          </template>
+          <template v-slot:no-data>
+            <v-btn color="pink lighten-1" @click="initialize"> Reset </v-btn>
+          </template>
+        </v-data-table>
+      </v-app>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    <script>
+      new Vue({
+        el: "#app",
+        vuetify: new Vuetify(),
+        data: () => ({
+          dialog: false,
+          dialogDelete: false,
+          headers: [
+            {
+              text: "Nome ",
+              align: "start",
+              sortable: false,
+              value: "name",
+            },
+            { text: "Telefone", value: "telefone", sortable: false },
+            { text: " ", value: "actions", sortable: false },
+          ],
+          nomes: [],
+          editedIndex: -1,
+          editedItem: {
+            name: "",
+            telefone: "",
+          },
+          defaultItem: {
+            name: "",
+            telefone: "",
+          },
+        }),
+
+        computed: {
+          formTitle() {
+            return this.editedIndex === -1 ? "Novo contato" : "Editar contato";
+          },
+        },
+
+        watch: {
+          dialog(val) {
+            val || this.close();
+          },
+          dialogDelete(val) {
+            val || this.closeDelete();
+          },
+        },
+
+        created() {
+          this.initialize();
+        },
+
+        methods: {
+          initialize() {
+            this.nomes = [
+              {
+                name: "Frozen Yogurt",
+                telefone: "(13)99115-2536",
+              },
+              {
+                name: "Ice cream sandwich",
+                telefone: "(11)99015-2136",
+              },
+              {
+                name: "Eclair",
+                telefone: "(13)97155-1536",
+              },
+              {
+                name: "Cupcake",
+                telefone: "(13)94125-1534",
+              },
+              {
+                name: "Gingerbread",
+                telefone: "(13)95123-1134",
+              },
+              {
+                name: "Jelly bean",
+                telefone: "(13)94125-1534",
+              },
+              {
+                name: "Lollipop",
+                telefone: "(13)94125-1534",
+              },
+              {
+                name: "Honeycomb",
+                telefone: "(13)94125-1534",
+              },
+              {
+                name: "Donut",
+                telefone: "(13)94125-1534",
+              },
+              {
+                name: "KitKat",
+                telefone: "(13)94125-1534",
+              },
+            ];
+          },
+
+          editItem(item) {
+            this.editedIndex = this.nomes.indexOf(item);
+            this.editedItem = Object.assign({}, item);
+            this.dialog = true;
+          },
+
+          deleteItem(item) {
+            this.editedIndex = this.nomes.indexOf(item);
+            this.editedItem = Object.assign({}, item);
+            this.dialogDelete = true;
+          },
+
+          deleteItemConfirm() {
+            this.nomes.splice(this.editedIndex, 1);
+            this.closeDelete();
+          },
+
+          close() {
+            this.dialog = false;
+            this.$nextTick(() => {
+              this.editedItem = Object.assign({}, this.defaultItem);
+              this.editedIndex = -1;
+            });
+          },
+
+          closeDelete() {
+            this.dialogDelete = false;
+            this.$nextTick(() => {
+              this.editedItem = Object.assign({}, this.defaultItem);
+              this.editedIndex = -1;
+            });
+          },
+
+          save() {
+            if (this.editedIndex > -1) {
+              Object.assign(this.nomes[this.editedIndex], this.editedItem);
+            } else {
+              this.nomes.push(this.editedItem);
+            }
+            this.close();
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
