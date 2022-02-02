@@ -137,6 +137,7 @@
                     class="mb-2"
                     v-bind="attrs"
                     v-on="on"
+                    @click="resetForm()"
                   >
                     <v-icon dark> mdi-plus </v-icon>
                   </v-btn>
@@ -152,14 +153,22 @@
                       <v-row>
                         <v-col cols="12" sm="6" md="4">
                           <v-text-field
+                            ref="name"
                             v-model="editedItem.name"
+                            :error-messages="errorMessages"
+                            :rules="[() => !!editedItem.name || 'Campo obrigatório', isNameInvalid]"
                             label="Nome"
+                            required
                           ></v-text-field>
                         </v-col>
                         <v-col cols="12" sm="6" md="4">
                           <v-text-field
+                            ref="telefone"
                             v-model="editedItem.telefone"
+                            v-mask="'(##) #####-####'"
+                            :rules="[() => !!editedItem.telefone || 'Campo obrigatório',()=> !!editedItem.telefone && editedItem.telefone.length == 15 || 'Numero de telefone invalido' ]"
                             label="telefone"
+                            required
                           ></v-text-field>
                         </v-col>
                       </v-row>
@@ -217,13 +226,17 @@
 
     <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/v-mask/dist/v-mask.min.js"></script>
     <script>
+      Vue.use(VueMask.VueMaskPlugin);
       new Vue({
         el: "#app",
         vuetify: new Vuetify(),
         data: () => ({
           dialog: false,
           dialogDelete: false,
+          errorMessages: "",
+          formHasErrors: false,
           headers: [
             {
               text: "Nome ",
@@ -237,12 +250,12 @@
           nomes: [],
           editedIndex: -1,
           editedItem: {
-            name: "",
-            telefone: "",
+            name: null,
+            telefone: null,
           },
           defaultItem: {
-            name: "",
-            telefone: "",
+            name: null,
+            telefone: null,
           },
         }),
 
@@ -250,9 +263,18 @@
           formTitle() {
             return this.editedIndex === -1 ? "Novo contato" : "Editar contato";
           },
+          form() {
+            return {
+              name: this.editedItem.name,
+              telefone: this.editedItem.telefone,
+            };
+          },
         },
 
         watch: {
+          name() {
+            this.errorMessages = "";
+          },
           dialog(val) {
             val || this.close();
           },
@@ -269,46 +291,45 @@
           initialize() {
             this.nomes = [
               {
-                name: "Frozen Yogurt",
+                name: "Wagner Lucas",
                 telefone: "(13)99115-2536",
               },
               {
-                name: "Ice cream sandwich",
+                name: "Renato Oliveira",
                 telefone: "(11)99015-2136",
               },
               {
-                name: "Eclair",
+                name: "Marcela Alves",
                 telefone: "(13)97155-1536",
               },
               {
-                name: "Cupcake",
-                telefone: "(13)94125-1534",
-              },
-              {
-                name: "Gingerbread",
-                telefone: "(13)95123-1134",
-              },
-              {
-                name: "Jelly bean",
-                telefone: "(13)94125-1534",
-              },
-              {
-                name: "Lollipop",
-                telefone: "(13)94125-1534",
-              },
-              {
-                name: "Honeycomb",
-                telefone: "(13)94125-1534",
-              },
-              {
-                name: "Donut",
-                telefone: "(13)94125-1534",
-              },
-              {
-                name: "KitKat",
+                name: "Luciana Alves",
                 telefone: "(13)94125-1534",
               },
             ];
+          },
+          isNameInvalid() {
+            const hasSpacer =
+              this.form.name && this.form.name.indexOf(" ") >= 0;
+            const splittedName = this.form.name && this.form.name.split(" ");
+            const isValid =
+              splittedName &&
+              splittedName[0] &&
+              splittedName[0].length >= 3 &&
+              splittedName[1] &&
+              splittedName[1].length >= 3;
+            console.log({ hasSpacer });
+            console.log({ isValid });
+
+            if (!hasSpacer && !isValid) {
+              this.errorMessages =
+                this.form.name &&
+                "Nome inválido (o nome deve conter nome e sobrenome com no mínimo 3 caracteres cada)";
+            } else {
+              this.errorMessages = "";
+            }
+
+            return true;
           },
 
           editItem(item) {
@@ -343,14 +364,40 @@
               this.editedIndex = -1;
             });
           },
+          resetForm() {
+            this.errorMessages = [];
+            this.formHasErrors = false;
+
+            Object.keys(this.form).forEach((f) => {
+              this.$refs[f].reset();
+            });
+          },
 
           save() {
-            if (this.editedIndex > -1) {
-              Object.assign(this.nomes[this.editedIndex], this.editedItem);
-            } else {
-              this.nomes.push(this.editedItem);
+            this.formHasErrors = false;
+            Object.keys(this.form).forEach((form) => {
+              if (!this.form[form]) this.formHasErrors = true;
+              console.log(this.$refs[form]);
+              this.$refs[form].validate(true);
+              if (!this.form[form].valid) {
+                this.formHasErrors = true;
+              } else {
+                this.formHasErrors = false;
+              }
+            });
+
+            if (
+              this.$refs["name"].valid &&
+              this.$refs["telefone"].valid &&
+              this.errorMessages == ""
+            ) {
+              if (this.editedIndex > -1) {
+                Object.assign(this.nomes[this.editedIndex], this.editedItem);
+              } else {
+                this.nomes.push(this.editedItem);
+              }
+              this.close();
             }
-            this.close();
           },
         },
       });
