@@ -19,98 +19,6 @@
       content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui"
     />
     <title>Contatos</title>
-    <style type="text/css">
-      * {
-        box-sizing: border-box;
-      }
-      body,
-      h1,
-      h2,
-      ul,
-      li {
-        margin: 0;
-        padding: 0;
-      }
-      ul {
-        list-style: none;
-      }
-      body {
-        background-color: #cde9ce;
-        font-family: Arial, Helvetica, sans-serif;
-      }
-      #app {
-        padding: 0 80px;
-      }
-
-      .contato {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        grid-auto-rows: auto;
-      }
-      .contato .title {
-        margin-top: 5%;
-        margin-bottom: 0;
-        font-weight: 200;
-      }
-      .contato .contato_nome {
-        grid-column: 1;
-      }
-      .contato .contato_numero {
-        grid-column: 2;
-      }
-      .contato .btn {
-        grid-column: 3;
-      }
-      .contato::after {
-        content: "";
-        width: 250%;
-        display: block;
-        border-bottom: 1px solid #ccc;
-        padding-top: 0;
-      }
-      .btn {
-        border-radius: 2%;
-        background-color: #b798d2;
-        border: none;
-        color: white;
-        text-align: center;
-        font-size: 18px;
-        padding: 2%;
-        width: 35%;
-        cursor: pointer;
-        margin: 1%;
-        margin-bottom: 15%;
-      }
-      .btn:hover {
-        background-color: #d0bbe1;
-        color: #000;
-      }
-      .btn_editar {
-        margin-bottom: 0;
-      }
-      .btn_incluir {
-        border-radius: 2%;
-        background-color: #b798d2;
-        border: none;
-        color: white;
-        text-align: center;
-        font-size: 18px;
-        padding: 2%;
-        width: 35%;
-        cursor: pointer;
-        margin: 1%;
-        margin-left: 50%;
-        margin-bottom: 15%;
-      }
-      .btn_incluir:hover {
-        background-color: #d0bbe1;
-        color: #000;
-      }
-      .v-app {
-        height: 0;
-        width: 0;
-      }
-    </style>
   </head>
 
   <body>
@@ -118,7 +26,7 @@
       <v-app id="inspire">
         <v-data-table
           :headers="headers"
-          :items="nomes"
+          :items="contact"
           phone="telefone"
           class="elevation-1"
         >
@@ -163,10 +71,10 @@
                         </v-col>
                         <v-col cols="12" sm="6" md="4">
                           <v-text-field
-                            ref="telefone"
-                            v-model="editedItem.telefone"
+                            ref="phone"
+                            v-model="editedItem.phone"
                             v-mask="'(##) #####-####'"
-                            :rules="[() => !!editedItem.telefone || 'Campo obrigatório',()=> !!editedItem.telefone && editedItem.telefone.length == 15 || 'Numero de telefone invalido' ]"
+                            :rules="[() => !!editedItem.phone || 'Campo obrigatório',()=> !!editedItem.phone && editedItem.phone.length == 15 || 'Numero de phone invalido' ]"
                             label="telefone"
                             required
                           ></v-text-field>
@@ -244,18 +152,18 @@
               sortable: false,
               value: "name",
             },
-            { text: "Telefone", value: "telefone", sortable: false },
+            { text: "Telefone", value: "phone", sortable: false },
             { text: " ", value: "actions", sortable: false },
           ],
-          nomes: [],
+          contact: [],
           editedIndex: -1,
           editedItem: {
             name: null,
-            telefone: null,
+            phone: null,
           },
           defaultItem: {
             name: null,
-            telefone: null,
+            phone: null,
           },
         }),
 
@@ -266,7 +174,7 @@
           form() {
             return {
               name: this.editedItem.name,
-              telefone: this.editedItem.telefone,
+              phone: this.editedItem.phone,
             };
           },
         },
@@ -289,22 +197,22 @@
 
         methods: {
           initialize() {
-            this.nomes = [
+            this.contact = [
               {
                 name: "Wagner Lucas",
-                telefone: "(13)99115-2536",
+                phone: "(13)99115-2536",
               },
               {
                 name: "Renato Oliveira",
-                telefone: "(11)99015-2136",
+                phone: "(11)99015-2136",
               },
               {
                 name: "Marcela Alves",
-                telefone: "(13)97155-1536",
+                phone: "(13)97155-1536",
               },
               {
                 name: "Luciana Alves",
-                telefone: "(13)94125-1534",
+                phone: "(13)94125-1534",
               },
             ];
           },
@@ -318,10 +226,8 @@
               splittedName[0].length >= 3 &&
               splittedName[1] &&
               splittedName[1].length >= 3;
-            console.log({ hasSpacer });
-            console.log({ isValid });
 
-            if (!hasSpacer && !isValid) {
+            if (!isValid) {
               this.errorMessages =
                 this.form.name &&
                 "Nome inválido (o nome deve conter nome e sobrenome com no mínimo 3 caracteres cada)";
@@ -333,19 +239,19 @@
           },
 
           editItem(item) {
-            this.editedIndex = this.nomes.indexOf(item);
+            this.editedIndex = this.contact.indexOf(item);
             this.editedItem = Object.assign({}, item);
             this.dialog = true;
           },
 
           deleteItem(item) {
-            this.editedIndex = this.nomes.indexOf(item);
+            this.editedIndex = this.contact.indexOf(item);
             this.editedItem = Object.assign({}, item);
             this.dialogDelete = true;
           },
 
           deleteItemConfirm() {
-            this.nomes.splice(this.editedIndex, 1);
+            this.contact.splice(this.editedIndex, 1);
             this.closeDelete();
           },
 
@@ -376,8 +282,15 @@
           save() {
             this.formHasErrors = false;
             Object.keys(this.form).forEach((form) => {
+              const ddd = this.form.phone.slice(1, 3);
+              console.log(ddd);
+              if (ddd == "11") {
+                let elHtml = document.getElementsByClassName("elevation-1")[0];
+                elHtml.style.backgroundColor = "blue";
+              } else {
+                console.log("não passou");
+              }
               if (!this.form[form]) this.formHasErrors = true;
-              console.log(this.$refs[form]);
               this.$refs[form].validate(true);
               if (!this.form[form].valid) {
                 this.formHasErrors = true;
@@ -388,13 +301,13 @@
 
             if (
               this.$refs["name"].valid &&
-              this.$refs["telefone"].valid &&
+              this.$refs["phone"].valid &&
               this.errorMessages == ""
             ) {
               if (this.editedIndex > -1) {
-                Object.assign(this.nomes[this.editedIndex], this.editedItem);
+                Object.assign(this.contact[this.editedIndex], this.editedItem);
               } else {
-                this.nomes.push(this.editedItem);
+                this.contact.push(this.editedItem);
               }
               this.close();
             }
