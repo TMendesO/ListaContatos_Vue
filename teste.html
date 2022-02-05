@@ -1,0 +1,9 @@
+<div id="app">
+  <v-app id="inspire">
+    <v-data-table :headers="headers" :items="desserts" class="elevation-1">
+      <template v-slot:item.phone="{ item }">
+        <v-chip :color="getColor(item.phone)" dark> {{ items.phone }} </v-chip>
+      </template>
+    </v-data-table>
+  </v-app>
+</div>

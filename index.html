@@ -36,7 +36,7 @@
               <v-divider class="mx-4" inset vertical></v-divider>
               <v-spacer></v-spacer>
               <v-dialog v-model="dialog" max-width="500px">
-                <template v-slot:activator="{ on, attrs }">
+                <template v-slot:activator="{ on, attrs, item  }">
                   <v-btn
                     fab
                     dark
@@ -51,7 +51,6 @@
                   </v-btn>
                 </template>
 
-                <!------Modal incluir e editar  ------>
                 <v-card>
                   <v-card-title>
                     <span class="text-h5">{{ formTitle }}</span>
@@ -118,7 +117,6 @@
             </v-toolbar>
           </template>
 
-          <---Botões de Ação--->
           <template v-slot:item.actions="{ item }">
             <v-icon small class="mr-2" @click="editItem(item)">
               mdi-pencil
@@ -126,7 +124,7 @@
             <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
           </template>
           <template v-slot:no-data>
-            <v-btn color="pink lighten-1" @click="initialize"> Reset </v-btn>
+            <v-btn @click="initialize" dark>Reset </v-btn>
           </template>
         </v-data-table>
       </v-app>
@@ -204,7 +202,7 @@
               },
               {
                 name: "Renato Oliveira",
-                phone: "(11)99015-2136",
+                phone: "(13)99015-2136",
               },
               {
                 name: "Marcela Alves",
@@ -216,6 +214,7 @@
               },
             ];
           },
+
           isNameInvalid() {
             const hasSpacer =
               this.form.name && this.form.name.indexOf(" ") >= 0;
@@ -267,7 +266,6 @@
             this.dialogDelete = false;
             this.$nextTick(() => {
               this.editedItem = Object.assign({}, this.defaultItem);
-              this.editedIndex = -1;
             });
           },
           resetForm() {
@@ -282,14 +280,6 @@
           save() {
             this.formHasErrors = false;
             Object.keys(this.form).forEach((form) => {
-              const ddd = this.form.phone.slice(1, 3);
-              console.log(ddd);
-              if (ddd == "11") {
-                let elHtml = document.getElementsByClassName("elevation-1")[0];
-                elHtml.style.backgroundColor = "blue";
-              } else {
-                console.log("não passou");
-              }
               if (!this.form[form]) this.formHasErrors = true;
               this.$refs[form].validate(true);
               if (!this.form[form].valid) {
@@ -298,6 +288,20 @@
                 this.formHasErrors = false;
               }
             });
+            if (this.editedIndex === -1) {
+              this.editedIndex = 3;
+            }
+
+            const x = this.editedIndex + 1;
+            const ddd = this.form.phone.slice(1, 3);
+            if (ddd == "11") {
+              let elHtml = document.getElementsByTagName("tr")[x];
+              elHtml.style.backgroundColor = "blue";
+            }
+            if (ddd !== "11") {
+              let elHtml = document.getElementsByTagName("tr")[x];
+              elHtml.style.backgroundColor = "";
+            }
 
             if (
               this.$refs["name"].valid &&
