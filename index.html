@@ -288,19 +288,21 @@
                 this.formHasErrors = false;
               }
             });
-            if (this.editedIndex === -1) {
-              this.editedIndex = 3;
-            }
 
             const x = this.editedIndex + 1;
             const ddd = this.form.phone.slice(1, 3);
             if (ddd == "11") {
               let elHtml = document.getElementsByTagName("tr")[x];
               elHtml.style.backgroundColor = "blue";
-            }
-            if (ddd !== "11") {
+            } else if (ddd !== "11") {
               let elHtml = document.getElementsByTagName("tr")[x];
               elHtml.style.backgroundColor = "";
+            }
+            if (ddd == "11" && this.editedIndex == -1) {
+              this.editedIndex = 3;
+              const y = this.editedIndex + 1;
+              let elHtml = document.getElementsByTagName("tr")[y];
+              elHtml.style.backgroundColor = "blue";
             }
 
             if (
